@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>슞페스 취향표</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:linear-gradient(160deg,#eaf2ff,#f8fbff 55%,#e3ecff);--card:#ffffffd9;--tx:#16264d;--sub:#5b6b92;--line:#c3d3f2;--head:#dbe7ff;--blank:#e9eef9;--acc:#3d6bff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:linear-gradient(160deg,#0d1530,#131d40 55%,#0b1228);--card:#16213fe6;--tx:#e8efff;--sub:#9db0dd;--line:#2f4377;--head:#1f2e5a;--blank:#1a2547;--acc:#7da2ff}}
+:root[data-theme="dark"]{--bg:linear-gradient(160deg,#0d1530,#131d40 55%,#0b1228);--card:#16213fe6;--tx:#e8efff;--sub:#9db0dd;--line:#2f4377;--head:#1f2e5a;--blank:#1a2547;--acc:#7da2ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);background-attachment:fixed;color:var(--tx);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;padding:14px 6px 40px;min-height:100vh}
+.wrap{max-width:760px;margin:0 auto}
+.sub{color:var(--sub);font-size:12px;margin:0 6px 10px;text-align:center}
+#capture{container-type:inline-size;background:var(--card);border-radius:14px;padding:3cqw;border:1px solid var(--line);box-shadow:0 4px 24px #3d6bff22}
+h1{font-size:5.2cqw;margin:.5cqw 0 2cqw;text-align:center;letter-spacing:.02em;background:linear-gradient(90deg,#3d6bff,#74b7ff,#3d6bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+table{border-collapse:collapse;width:100%;table-layout:fixed}
+th,td{border:1px solid var(--line);padding:0;text-align:center;font-size:2.3cqw;line-height:1;height:6.6cqw;overflow:hidden;white-space:nowrap}
+th{background:var(--head);font-weight:700;cursor:pointer;user-select:none;font-size:2.4cqw}
+th:first-child{width:8%}
+td.diag{background:var(--blank);color:var(--sub)}
+td.c{cursor:pointer;color:var(--sub)}
+.tabs{display:flex;gap:8px;justify-content:center;margin-bottom:10px}.tab{padding:8px 22px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--sub);font-size:14px;font-weight:700;cursor:pointer}.tab.on{background:linear-gradient(135deg,#3d6bff,#6fb2ff);color:#fff;border-color:transparent}
+#grid.n9 td,#grid.n9 th{font-size:3.1cqw;height:9.5cqw}#grid.n9 th{font-size:3.2cqw}
+.legend{display:flex;flex-wrap:wrap;gap:1.4cqw;margin-top:2.5cqw;justify-content:center}
+.chip{display:flex;align-items:center;gap:1cqw;padding:1.2cqw 2.2cqw;border-radius:99px;border:.4cqw solid var(--line);background:transparent;color:var(--tx);font-size:2.5cqw;cursor:pointer}
+.chip i{width:2.6cqw;height:2.6cqw;border-radius:.7cqw;display:inline-block}
+.chip.on{border-color:var(--acc);box-shadow:0 0 0 .5cqw color-mix(in srgb,var(--acc) 25%,transparent)}
+.foot{font-size:2.2cqw;color:var(--sub);text-align:right;margin-top:1.5cqw;min-height:2.2cqw}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center;justify-content:center}
+button.b{padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--tx);font-size:14px;cursor:pointer}
+button.p{background:linear-gradient(135deg,#3d6bff,#6fb2ff);color:#fff;border-color:transparent}
+label{font-size:13px;color:var(--sub);display:flex;gap:6px;align-items:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="sub">색을 고르고 칸을 눌러요 · 멤버 이름을 누르면 줄 전체 칠하기 · 같은 색을 다시 누르면 지워져요</p>
+  <div class="tabs"><button class="tab on" data-v="13">13ver</button><button class="tab" data-v="9">9ver</button></div>
+  <div id="capture">
+    <h1>슞페스 취향표</h1>
+    <table id="grid"></table>
+    <div class="legend" id="legend"></div>
+    <div class="foot" id="date"></div>
+  </div>
+  <div class="bar">
+    <label><input type="checkbox" id="showDate"> 이미지에 날짜 표시</label>
+    <button class="b p" id="save">이미지 저장</button>
+    <button class="b" id="reset">색깔 초기화</button>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const FULL=["이특","희철","한경","강인","예성","신동","성민","은혁","시원","동해","기범","려욱","규현"];
+const VERS={13:FULL,9:["이특","희철","예성","신동","은혁","시원","동해","려욱","규현"]};
+let ver=13,M=VERS[13];
+const L=[
+["x","특희","특경","특강","특예","특신","특민","특은","특원","특해","특범","특려","특규"],
+["희특","x","희경","철강","희예","희신","희민","희재","렐심","희해","희범","희욱","희규"],
+["한특","한희","x","경간","한예","경신","한민","한혁","경원","경해","경범","경욱","한현"],
+["강특","강철","강한","x","투운","강동","강민","강혁","강원","강해","강범","강욱","강현"],
+["예특","예희","예경","예강","x","예신","예민","예혁","예원","예해","예범","예욱","예규"],
+["신특","신철","신경","신강","신예","x","신민","신은","신원","신해","신범","신욱","신규"],
+["민특","민희","민경","민강","민예","민신","x","성은","성원","민해","민범","민욱","민규"],
+["은특","은철","은경","은강","은예","은신","은성","x","은원","은해","은범","은욱","은규"],
+["원특","심렐","원경","원강","원예","원신","원민","원혁","x","원해","원범","선욱","선규"],
+["해특","해희","해경","해강","해예","해신","해민","해은","해원","x","해범","해욱","해규"],
+["범특","범희","범경","범강","범예","범신","범민","범은","범원","범해","x","범욱","범규"],
+["려특","려희","욱경","욱강","욱예","려신","려민","려은","욱선","려해","욱범","x","욱규"],
+["규특","규렐","현경","규강","현예","현신","조이","규재","규션","규해","규범","현욱","x"]];
+const S=[["OTP","#f06a6a","#fff"],["좋아함","#9be08f","#1d3a1a"],["호감","#fff3a0","#4a4210"],["가능","#9ff0f0","#0f3a3a"],["무관심","#ffffff","#555"],["별로","#888","#fff"],["지뢰","#555","#fff"]];
+let brush=0,data={};
+const load=()=>{data={};try{data=JSON.parse(localStorage.getItem("suju-chart-v3-"+ver)||"{}")}catch(e){}};
+const save=()=>{try{localStorage.setItem("suju-chart-v3-"+ver,JSON.stringify(data))}catch(e){}};
+const key=(r,c)=>r+"-"+c;
+function paint(r,c){
+  const td=document.getElementById("c"+key(r,c)),v=data[key(r,c)];
+  td.style.background=v==null?"":S[v][1];
+  td.style.color=v==null?"":S[v][2];
+}
+function set(r,c){const k=key(r,c);if(data[k]===brush)delete data[k];else data[k]=brush;paint(r,c)}
+function build(){
+  const t=document.getElementById("grid");t.className="n"+M.length;
+  let h='<tr><th style="cursor:default"></th>'+M.map(m=>`<th>${m}</th>`).join("")+"</tr>";
+  M.forEach((a,r)=>{
+    h+=`<tr><th data-row="${r}">${a}</th>`;
+    M.forEach((_,c)=>{h+=r===c?'<td class="diag">x</td>':`<td class="c" id="c${key(r,c)}" data-r="${r}" data-c="${c}">${L[FULL.indexOf(M[r])][FULL.indexOf(M[c])]}</td>`});
+    h+="</tr>";
+  });
+  t.innerHTML=h;
+  M.forEach((_,r)=>M.forEach((_,c)=>{if(r!==c)paint(r,c)}));
+  t.onclick=e=>{
+    const td=e.target.closest("td.c");
+    if(td){set(+td.dataset.r,+td.dataset.c);save();return}
+    const th=e.target.closest("th[data-row]");
+    if(th){const r=+th.dataset.row;M.forEach((_,c)=>{if(c!==r){data[key(r,c)]=brush;paint(r,c)}});save()}
+  };
+}
+function legend(){
+  const l=document.getElementById("legend");
+  l.innerHTML=S.map((s,i)=>`<button class="chip${i===brush?" on":""}" data-i="${i}"><i style="background:${s[1]}"></i>${s[0]}</button>`).join("");
+  l.onclick=e=>{const b=e.target.closest(".chip");if(b){brush=+b.dataset.i;legend()}};
+}
+document.getElementById("reset").onclick=()=>{if(confirm("칠한 색깔을 모두 초기화할까요?")){data={};save();build()}};
+document.getElementById("showDate").onchange=e=>{
+  const d=new Date();
+  document.getElementById("date").textContent=e.target.checked?`${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`:"";
+};
+document.getElementById("save").onclick=async()=>{
+  try{
+    const cv=await html2canvas(document.getElementById("capture"),{scale:3,backgroundColor:getComputedStyle(document.body).backgroundColor||null});
+    const a=document.createElement("a");a.download="shoopest-chart.png";a.href=cv.toDataURL("image/png");a.click();
+  }catch(e){alert("이미지 저장에 실패했어요.")}
+};
+document.querySelector(".tabs").onclick=e=>{
+  const b=e.target.closest(".tab");if(!b)return;
+  ver=+b.dataset.v;M=VERS[ver];
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
+  load();build();
+};
+load();build();legend();
+</script>
+</body>
+</html>
